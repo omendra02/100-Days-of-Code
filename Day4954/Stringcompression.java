@@ -1,4 +1,4 @@
-package Day4950;
+package Day4954;
 
 public class Stringcompression {
     class Solution {
