@@ -1,0 +1,25 @@
+START TRANSACTION; -- Begin the transaction
+
+-- Deduct the quantity sold from the Products table
+UPDATE Products p
+JOIN Sales s ON p.product_id = s.product_id
+SET p.quantity_in_stock = p.quantity_in_stock - s.quantity_sold;
+
+-- Check if any negative quantities would result from the update
+SELECT COUNT(*) INTO @negative_count
+FROM Products
+WHERE quantity_in_stock < 0;
+
+-- If any negative quantities would result, rollback the transaction
+IF @negative_count > 0 THEN
+    ROLLBACK;
+    SELECT 'Transaction rolled back due to insufficient stock.' AS Message;
+ELSE
+    COMMIT; -- Commit the transaction if no negative quantities would result
+    SELECT 'Transaction committed successfully.' AS Message;
+END IF;
+
+START TRANSACTION;
+UPDATE Products SET quantity_in_stock = 10 WHERE product_id = 101;
+INSERT INTO Sales (product_id, quantity_sold) VALUES (101, 5);
+COMMIT;
